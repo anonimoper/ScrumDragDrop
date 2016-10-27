@@ -1,0 +1,201 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<style>
+    .row{
+        margin-bottom:8px;
+    }
+.botonRedondo{
+    width:40px;
+    height:40px;
+    border-radius:100%;
+    background:#F44336;
+    font-size:23px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    color:#FFF;
+    border:none;
+    outline:none;
+}
+.botonRedondo:hover{
+    background:#d21305;
+}
+.HojaTrabajo{
+    background-color:#f5f565;
+    min-height:80px;
+    border: 1px solid black;
+    margin-top:5px;
+}
+.panel-scrum{
+    min-height:200px;
+    border: 5px solid black;
+}
+
+#ScrumPendientes{
+    background-color:yellow;
+}
+
+#ScrumProceso{
+    background-color:blue;
+}
+
+#ScrumFinalizada{
+    background-color:green;
+}
+
+.Tarea_Importante{
+    background-color:red;
+    width:100px;
+    height:100px;
+}
+.Urgente{
+    background-color: #E53935;
+    color: white;
+    font-family:  Arial;
+}
+.Aviso{
+    background-color: rgba(96, 229, 53, 0.82);
+    font-family:  Arial;
+}
+#div1 {
+    width: 350px;
+    height: 70px;
+    padding: 10px;
+    border: 1px solid #aaaaaa;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <h1> SCRUM AL PODER</h1>
+        </div>
+        <div class="row">
+            <button class="botonRedondo" onclick="AbrirFormularioTarea()">+ </button>
+        </div>
+
+        <div class="row Formulario_Tarea" style="display:none">
+            <div class="form-group">
+                <label> Tipo Tarea </label>
+                <select class="form-control" id="TipoTarea">
+                    <option value="Aviso"> Aviso </option>
+                    <option value="Normal"> Normal</option>
+                    <option value="Medio"> Medio</option>
+                    <option value="Urgente"> Urgente</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label> Descripcion</label>
+                <input type="text" class="form-control" id="DescripcionTarea">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" onclick= "AnadirTarea()"> Añadir Tarea </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                <h3> Pendiente</h3>
+            </div>
+            <div class="col-sm-4">
+                <h3> En proceso</h3>
+            </div>
+            <div class="col-sm-4">
+                <h3> Finalizado</h3>
+            </div>
+            <div class="col-sm-4 panel-scrum" id="ScrumPendientes" ondrop="drop(event)" ondragover="allowDrop(event)">
+
+
+                <!--<div class="col-sm-8  HojaTrabajo" id="1_Tarea" draggable="true" ondragstart="drag(event)">
+                    hola
+                </div>
+
+                <div class="col-sm-8  HojaTrabajo" id="2_Tarea" draggable="true" ondragstart="drag(event)">
+                    pola
+                </div>-->
+            </div>
+
+            <div class="col-sm-4 panel-scrum" id="ScrumProceso" ondrop="drop(event)" ondragover="allowDrop(event)">
+            </div>
+
+            <div class="col-sm-4 panel-scrum" id="ScrumFinalizada" ondrop="drop(event)" ondragover="allowDrop(event)">
+            </div>
+        </div>
+    </div>        
+</body>
+<script>
+    ActualizarListaTareaDiv( GetListaTarea());
+function allowDrop(ev) {
+    console.log("entra");
+    ev.preventDefault();
+}
+
+function drag(ev) {
+    
+    ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("text");
+    ev.target.appendChild(document.getElementById(data));
+}
+
+function AbrirFormularioTarea(){
+    var oFormulario = document.getElementsByClassName("Formulario_Tarea");
+    if (oFormulario[0].style.display == "none")
+        oFormulario[0].style.display = "block";
+    else
+        oFormulario[0].style.display = "none";
+}
+
+
+
+ActualizarListaTareaDiv( GetListaTarea());
+
+function AnadirTarea(){
+    var sTipoTarea			= document.getElementById("TipoTarea").value;
+    var sDescripcionTarea	= document.getElementById("DescripcionTarea").value;
+    console.log(sTipoTarea+" "+sDescripcionTarea);
+    var oListaTarea = GetListaTarea();
+    var oNuevaTarea		= {"TipoTarea": sTipoTarea, "DescripcionTarea": sDescripcionTarea, "Id":oListaTarea.Contador+1};
+    oListaTarea.Tareas.push(oNuevaTarea);
+    oListaTarea.Contador += 1;
+    localStorage.setItem("ListaTarea", JSON.stringify(oListaTarea));
+
+    ActualizarListaTareaDiv(oListaTarea);
+    document.getElementsByClassName("Formulario_Tarea")[0].style.display="none";
+}
+
+function ActualizarListaTareaDiv(oListaTarea){
+    var DivListaTarea		= document.getElementById("ScrumPendientes");
+    var i = 0;
+    var sHtmlUnido	= "";
+    for(i = 0; i < oListaTarea.Tareas.length; i++){
+        var sClaseTarea	= "col-sm-12 HojaTrabajo TipoTarea "+oListaTarea.Tareas[i].TipoTarea;
+        var id = "id = '"+oListaTarea.Tareas[i].Id+"_Tarea'";
+        sHtmlUnido += "<div class='"+sClaseTarea+"' draggable='true' ondragstart='drag(event)'"+id+">\
+                            <span>Tipo tarea: </span> <span>"+ oListaTarea.Tareas[i].TipoTarea+" </span>\
+                            <div >\
+                                <span> Descripción: </span><span>"+oListaTarea.Tareas[i].DescripcionTarea+"</span>\
+                            </div>\
+                        </div>";
+    }
+    
+    DivListaTarea.innerHTML	= sHtmlUnido;
+}
+
+function GetListaTarea(){
+    var oListaTarea			= localStorage.getItem("ListaTarea");
+    if (oListaTarea == null){
+        oListaTarea			= {"Contador": 0, "Tareas":[]};
+    }
+    else{
+        oListaTarea		=  JSON.parse(oListaTarea);
+    }
+    return oListaTarea;
+}
+
+</script>
+</html>
